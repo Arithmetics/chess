@@ -97,7 +97,24 @@ class Game
       #diff conditions for line of sight depending of what type of piece is being moved
       continue = false
       if select_piece(x1,y1).class == Pawn
-        #fill in later
+        #pawn moving up and down, will be good
+        if cross_view?(x1,y1,x2,y2)
+          continue = true
+        end
+        #but can also take an opposite color piece diagonally
+        if select_piece(x1,y1).color == "black"
+          if black_pawn_helper(x1,y1,x2,y2)
+            continue = true
+          end
+        #had to make a white method since white moves diff direction
+        elsif select_piece(x1,y1).color == "white"
+          if white_pawn_helper(x1,y1,x2,y2)
+            continue = true
+          end
+        end
+
+
+        end
       elsif select_piece(x1,y1).class == Knight
         continue = true
       elsif select_piece(x1,y1).class == Bishop
@@ -117,25 +134,30 @@ class Game
           continue = true
         end
       end
+
+      #if piece is finally making a fully legal move according to the move rules of the piece
+      #exception is for squares occupied by own color, covered here
       if continue
         #is square being moved to occupied? if so, if it's diff color, no move, else, take the piece there
         if !space_empty?(x2,y2)
           if space_color(x2,y2) != space_color(x1,y1)
             delete_piece(x2,y2)
+            select_piece(x1,y1).moved = true
             select_piece(x1,y1).location = [x2,y2]
           end
         else
+          select_piece(x1,y1).moved = true
           select_piece(x1,y1).location = [x2,y2]
         end
       end
 
-    end
-  end
+
+  end #move_piece
 
   def delete_piece(x,y)
     i = @pieces.find_index { |piece| piece.location[0] == x && piece.location[1] == y }
     @pieces.delete_at(i)
-  end
+  end #delete_piece
 
   def diagonal_view?(x1,y1,x2,y2)
     if (x2-x1).abs == (y2-y1).abs
@@ -204,6 +226,27 @@ class Game
     sight
   end
 
+  def white_pawn_helper(x1,y1,x2,y2)
+    allowed = true
+    if (x1 == (x2 + 1) && y1 == (y2 -1)) || (x1 == (x2 - 1) && y1 == (y2 -1))
+      if select_piece(x2,y2) && select_piece(x2,y2).color == "black"
+        allowed = true
+      else
+        allowed = false
+      end
+    end
+  end #white_pawn_helper
+
+  def black_pawn_helper(x1,y1,x2,y2)
+    allowed = true
+    if (x1 == (x2 - 1) && y1 == (y2 + 1)) || (x1 == (x2 + 1) && y1 == (y2 + 1))
+      if select_piece(x2,y2) && select_piece(x2,y2).color == "white"
+        allowed = true
+      else
+        allowed = false
+      end
+    end
+  end #black_pawn_helper
 
 end #GAME
 
@@ -240,9 +283,28 @@ class Pawn < Piece
     end
   end
 
-  def move(x,y)
-    @location[0] = x
-    @location[1] = y
+  def allowed_moves
+    allowed_squares = []
+
+    #creates shifts for each color
+    if @color == "black"
+      shifts = [[-1,-1],[1,-1],[0,-1],[0,-2]]
+    elsif @color == "white"
+      shifts = [[1,1],[-1,1],[0,1],[0,2]]
+    end
+    #removes 2 move if piece has been moved
+    if moved?
+      shifts.pop
+    end
+    #find squares in those shift rays
+    shifts.each do |r|
+      r[0] += @location[0]
+      r[1] += @location[1]
+      if r[0] > -1 && r[0] < 8 && r[1] > -1 && r[1] < 8
+        allowed_squares.push(r)
+      end
+    end
+    allowed_squares
   end
 
 end
@@ -265,7 +327,7 @@ class Knight < Piece
     shifts.each do |r|
       r[0] += @location[0]
       r[1] += @location[1]
-      if r[0] > -1 && r[0] < 8 && r[1] > -1 && r[1] < 9
+      if r[0] > -1 && r[0] < 8 && r[1] > -1 && r[1] < 8
         allowed_squares.push(r)
       end
     end
@@ -294,7 +356,7 @@ class Bishop < Piece
     allowed_squares = []
     shifts = []
     #creates diagonal shifts
-    7.times do |m|
+    8.times do |m|
       if m != 0
         shifts.push([-m,-m])
         shifts.push([-m,m])
@@ -306,7 +368,7 @@ class Bishop < Piece
     shifts.each do |r|
       r[0] += @location[0]
       r[1] += @location[1]
-      if r[0] > -1 && r[0] < 8 && r[1] > -1 && r[1] < 9
+      if r[0] > -1 && r[0] < 8 && r[1] > -1 && r[1] < 8
         allowed_squares.push(r)
       end
     end
@@ -327,7 +389,30 @@ class Rook < Piece
     end
   end
 
-end
+  def allowed_moves
+    allowed_squares = []
+    shifts = []
+    #creates diagonal shifts
+    8.times do |m|
+      if m != 0
+        shifts.push([0,-m])
+        shifts.push([0,m])
+        shifts.push([-m,0])
+        shifts.push([m,0])
+      end
+    end
+    #find squares in those shift rays
+    shifts.each do |r|
+      r[0] += @location[0]
+      r[1] += @location[1]
+      if r[0] > -1 && r[0] < 8 && r[1] > -1 && r[1] < 8
+        allowed_squares.push(r)
+      end
+    end
+    allowed_squares
+  end
+
+end # ROOK
 
 
 class Queen < Piece
