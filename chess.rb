@@ -3,7 +3,6 @@ require 'yaml'
 class Game
   attr_accessor :pieces, :turn
 
-
   def initialize
     @turn = "white"
     @pieces = []
@@ -175,10 +174,7 @@ class Game
     continue = false
 
     if select_piece(x1,y1).class == Pawn
-      #pawn moving up and down, will be good
-      if cross_view?(x1,y1,x2,y2)
-        continue = true
-      end
+
       #but can also take an opposite color piece diagonally
       if select_piece(x1,y1).color == "black"
         continue = false
@@ -187,10 +183,15 @@ class Game
         end
       #had to make a white method since white moves diff direction
       elsif select_piece(x1,y1).color == "white"
-        continue = false 
+        continue = false
         if white_pawn_helper(x1,y1,x2,y2)
           continue = true
         end
+      end
+
+      #pawn moving up and down, will be good
+      if !cross_view?(x1,y1,x2,y2) && !diagonal_view?(x1,y1,x2,y2)
+        continue = false
       end
 
     elsif select_piece(x1,y1).class == Knight
@@ -300,7 +301,6 @@ class Game
     sight
   end
 
-  #this is allowing forward moves for pawns to take pieces
   def white_pawn_helper(x1,y1,x2,y2)
     allowed = true
     if x1 != x2
@@ -318,7 +318,6 @@ class Game
     end
   end #white_pawn_helper
 
-  #this is allowing forward moves for pawns to take pieces
   def black_pawn_helper(x1,y1,x2,y2)
     allowed = true
     #only allow a diagonal move if space is occupied by piece of opposite color
@@ -641,7 +640,6 @@ class Game
     puts "saved game with name #{name}"
   end
 
-
   def game_flow
 
 
@@ -681,8 +679,6 @@ class Game
 
 end #GAME
 
-
-
 class Piece
   attr_accessor :location, :moved, :shifts, :unicode
 
@@ -701,7 +697,6 @@ class Piece
   end
 
 end
-
 
 class Pawn < Piece
   attr_accessor :color
@@ -740,7 +735,6 @@ class Pawn < Piece
 
 end
 
-
 class Knight < Piece
   attr_accessor :color
 
@@ -769,7 +763,6 @@ class Knight < Piece
 
 
 end
-
 
 class Bishop < Piece
   attr_accessor :color
@@ -808,7 +801,6 @@ class Bishop < Piece
 
 end #BISHOP
 
-
 class Rook < Piece
   attr_accessor :color
 
@@ -845,7 +837,6 @@ class Rook < Piece
   end
 
 end # ROOK
-
 
 class Queen < Piece
   attr_accessor :color
@@ -893,7 +884,6 @@ class Queen < Piece
 
 end
 
-
 class King < Piece
   attr_accessor :color
 
@@ -920,7 +910,6 @@ class King < Piece
   end
 
 end
-
 
 def startup_game
   puts 'hello, welcome to chess!'
