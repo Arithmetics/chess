@@ -35,6 +35,14 @@ class Game
     end
   end
 
+  def swap_turn
+    if turn == "black"
+      turn = "white"
+    else
+      turn = "black"
+    end
+  end
+
   def draw
     squares_array = (" " * 64).split('')
     @pieces.each do |piece|
@@ -89,7 +97,41 @@ class Game
     end
   end
 
+  def list_all_legal_moves(x1,y1)
+    if select_piece(x1,y1)
+      piece_moves = select_piece(x1,y1).allowed_moves
+      piece_moves.select do |r|
+        view?(x1,y1,r[0],r[1]) && (space_color(r[0],r[1]) != space_color(x1,y1))
+      end
+    end
+  end
+
   def move_piece(x1,y1,x2,y2)
+    #find out if target_square is an allowed move for specific piece
+    if select_piece(x1,y1) && select_piece(x1,y1).allowed_moves.find {|move| move == [x2,y2]}
+
+      if view?(x1,y1,x2,y2)
+        #is square being moved to occupied? if so, if it's diff color, no move, else, take the piece there
+        if !space_empty?(x2,y2)
+          if space_color(x2,y2) != space_color(x1,y1)
+            if !puts_self_in_check?(x1,y1,x2,y2)
+              delete_piece(x2,y2)
+              select_piece(x1,y1).moved = true
+              select_piece(x1,y1).location = [x2,y2]
+            end
+          end
+        else
+          if !puts_self_in_check?(x1,y1,x2,y2)
+            select_piece(x1,y1).moved = true
+            select_piece(x1,y1).location = [x2,y2]
+          end
+        end
+      end
+    end
+    draw
+  end #move_piece
+
+  def move_piece_in_shadow_game(x1,y1,x2,y2)
     #find out if target_square is an allowed move for specific piece
     if select_piece(x1,y1) && select_piece(x1,y1).allowed_moves.find {|move| move == [x2,y2]}
 
@@ -257,39 +299,153 @@ class Game
 
   def white_pawn_helper(x1,y1,x2,y2)
     allowed = true
-    if (x1 == (x2 + 1) && y1 == (y2 -1)) || (x1 == (x2 - 1) && y1 == (y2 -1))
+    if x1 != x2
       if select_piece(x2,y2) && select_piece(x2,y2).color == "black"
         allowed = true
       else
         allowed = false
+      end
+    elsif (x1 == x2)
+      if select_piece(x2,y2) && select_piece(x2,y2).color == "black"
+        allowed = false
+      else
+        allowed = true
       end
     end
   end #white_pawn_helper
 
   def black_pawn_helper(x1,y1,x2,y2)
     allowed = true
-    if (x1 == (x2 - 1) && y1 == (y2 + 1)) || (x1 == (x2 + 1) && y1 == (y2 + 1))
+    #only allow a diagonal move if space is occupied by piece of opposite color
+    if x1 != x2
       if select_piece(x2,y2) && select_piece(x2,y2).color == "white"
         allowed = true
       else
         allowed = false
       end
+      #only allow a straight move is space is unoccupied by piece of opposite color
+    elsif x1 == x2
+      if select_piece(x2,y2) && select_piece(x2,y2).color == "white"
+        allowed = false
+      else
+        allowed = true
+      end
     end
   end #black_pawn_helper
 
   def castle_king(x1,y1,x2,y2)
+    #
   end
 
-  def check?
-    #this needs to check the entire board
+  def player_in_check?
+    king_at_risk = false
+    @pieces.each do |piece|
+      if piece.color != @turn
+        list_all_legal_moves(piece.location[0],piece.location[1]).each do |legal_move|
+          move_check = dummy_move(piece.location[0],piece.location[1],legal_move[0],legal_move[1])
+          if move_check[1].class == King
+            king_at_risk = true
+          end
+        end
+      end
+    end
+    king_at_risk
   end
 
-  def checkmate?
+  def puts_self_in_check?(x1,y1,x2,y2)
+    potential_game = Game.new
+    potential_game.turn = self.turn
+    potential_game.pieces = []
+    self.pieces.each do |piece|
+      potential_game.pieces.push(piece.clone)
+    end
+    potential_game.move_piece_in_shadow_game(x1,y1,x2,y2)
 
+    king_at_risk = false
+    potential_game.pieces.each do |piece|
+      if piece.color != @turn
+        potential_game.list_all_legal_moves(piece.location[0],piece.location[1]).each do |legal_move|
+          move_check = potential_game.dummy_move(piece.location[0],piece.location[1],legal_move[0],legal_move[1])
+          if move_check[1].class == King
+            king_at_risk = true
+          end
+        end
+      end
+    end
+    king_at_risk
   end
 
-  def stalemate
+  def player_in_checkmate?
+    if player_in_check?
+      checkmate = true
+      @pieces.each do |piece|
+        if piece.color == @turn
+          list_all_legal_moves(piece.location[0],piece.location[1]).each do |legal_move|
+            if !puts_self_in_check?(piece.location[0],piece.location[1],legal_move[0],legal_move[1])
+              checkmate = false
+            end
+          end
+        end
+      end
+    else
+      checkmate = false
+    end
+    checkmate
   end
+
+  def stalemate?
+    if !player_in_check?
+      stalemate = true
+      @pieces.each do |piece|
+        if piece.color == @turn
+          list_all_legal_moves(piece.location[0],piece.location[1]).each do |legal_move|
+            if !puts_self_in_check?(piece.location[0],piece.location[1],legal_move[0],legal_move[1])
+              stalemate = false
+            end
+          end
+        end
+      end
+    else
+      stalemate = false
+    end
+    stalemate
+  end
+
+  def pawn_conversion
+    #white pawns
+    @pieces.select do |piece|
+     if piece.class == Pawn && piece.color == "white" && piece.location[1] == 7
+       x = piece.location[0]
+       y = piece.location[1]
+       delete_piece(x,y)
+       choices = [Rook,Knight,Bishop,Queen]
+       p choices
+       pick = -1
+       until pick > -1 && pick < choices.length
+         puts 'pick what this piece is to become'
+         pick = gets.chomp.to_i
+       end
+       @pieces.push(choices[pick].new([x,y],"white"))
+     end
+    end
+    #black pawns
+    @pieces.select do |piece|
+     if piece.class == Pawn && piece.color == "black" && piece.location[1] == 0
+       x = piece.location[0]
+       y = piece.location[1]
+       delete_piece(x,y)
+       choices = [Rook,Knight,Bishop,Queen]
+       p choices
+       pick = -1
+       until pick > -1 && pick < choices.length
+         puts 'pick what this piece is to become'
+         pick = gets.chomp.to_i
+       end
+       @pieces.push(choices[pick].new([x,y],"black"))
+     end
+    end
+  end
+
 
 end #GAME
 
