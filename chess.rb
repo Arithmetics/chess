@@ -1,3 +1,5 @@
+require 'yaml'
+
 class Game
   attr_accessor :pieces, :turn
 
@@ -36,10 +38,10 @@ class Game
   end
 
   def swap_turn
-    if turn == "black"
-      turn = "white"
+    if @turn == "black"
+      @turn = "white"
     else
-      turn = "black"
+      @turn = "black"
     end
   end
 
@@ -128,7 +130,6 @@ class Game
         end
       end
     end
-    draw
   end #move_piece
 
   def move_piece_in_shadow_game(x1,y1,x2,y2)
@@ -180,11 +181,13 @@ class Game
       end
       #but can also take an opposite color piece diagonally
       if select_piece(x1,y1).color == "black"
+        continue = false
         if black_pawn_helper(x1,y1,x2,y2)
           continue = true
         end
       #had to make a white method since white moves diff direction
       elsif select_piece(x1,y1).color == "white"
+        continue = false 
         if white_pawn_helper(x1,y1,x2,y2)
           continue = true
         end
@@ -297,6 +300,7 @@ class Game
     sight
   end
 
+  #this is allowing forward moves for pawns to take pieces
   def white_pawn_helper(x1,y1,x2,y2)
     allowed = true
     if x1 != x2
@@ -305,7 +309,7 @@ class Game
       else
         allowed = false
       end
-    elsif (x1 == x2)
+    elsif x1 == x2
       if select_piece(x2,y2) && select_piece(x2,y2).color == "black"
         allowed = false
       else
@@ -314,6 +318,7 @@ class Game
     end
   end #white_pawn_helper
 
+  #this is allowing forward moves for pawns to take pieces
   def black_pawn_helper(x1,y1,x2,y2)
     allowed = true
     #only allow a diagonal move if space is occupied by piece of opposite color
@@ -332,10 +337,6 @@ class Game
       end
     end
   end #black_pawn_helper
-
-  def castle_king(x1,y1,x2,y2)
-    #
-  end
 
   def player_in_check?
     king_at_risk = false
@@ -422,7 +423,7 @@ class Game
        p choices
        pick = -1
        until pick > -1 && pick < choices.length
-         puts 'pick what this piece is to become'
+         puts 'pick with array number format what this piece is to become'
          pick = gets.chomp.to_i
        end
        @pieces.push(choices[pick].new([x,y],"white"))
@@ -446,6 +447,237 @@ class Game
     end
   end
 
+  def castle_right_white
+    allowed = false
+    #no pieces in between
+    if !select_piece(5,0) && !select_piece(6,0)
+      #king and rook havnt been moved
+      if !select_piece(4,0).moved? && !select_piece(7,0).moved?
+        #check other color pieces to confirm the middle squares are not threatened
+        allowed = true
+        @pieces.each do |piece|
+          if piece.color != @turn
+            list_all_legal_moves(piece.location[0],piece.location[1]).each do |move|
+              if move == [5,0] || move == [6,0]
+                allowed = false
+              end
+            end
+          end
+        end
+      end
+    end
+    if allowed && !player_in_check?
+      select_piece(4,0).location = [6,0]
+      select_piece(7,0).location = [5,0]
+    end
+  end
+
+  def castle_left_white
+    allowed = false
+    #no pieces in between
+    if !select_piece(1,0) && !select_piece(2,0) && !select_piece(3,0)
+      #king and rook havnt been moved
+      if !select_piece(0,0).moved? && !select_piece(4,0).moved?
+        #check other color pieces to confirm the middle squares are not threatened
+        allowed = true
+        @pieces.each do |piece|
+          if piece.color != @turn
+            list_all_legal_moves(piece.location[0],piece.location[1]).each do |move|
+              if move == [1,0] || move == [2,0] || move == [3,0]
+                allowed = false
+              end
+            end
+          end
+        end
+      end
+    end
+    #also cant castle if in check
+    if allowed && !player_in_check?
+      select_piece(4,0).location = [2,0]
+      select_piece(0,0).location = [3,0]
+    end
+  end
+
+  def castle_right_black
+    allowed = false
+    #no pieces in between
+    if !select_piece(5,7) && !select_piece(6,7)
+      #king and rook havnt been moved
+      if !select_piece(4,7).moved? && !select_piece(7,7).moved?
+        #check other color pieces to confirm the middle squares are not threatened
+        allowed = true
+        @pieces.each do |piece|
+          if piece.color != @turn
+            list_all_legal_moves(piece.location[0],piece.location[1]).each do |move|
+              if move == [5,7] || move == [6,7]
+                allowed = false
+              end
+            end
+          end
+        end
+      end
+    end
+    #also cant castle if in check
+    if allowed && !player_in_check?
+      select_piece(4,7).location = [6,7]
+      select_piece(7,7).location = [5,7]
+    end
+  end
+
+  def castle_left_black
+    allowed = false
+    #no pieces in between
+    if !select_piece(1,7) && !select_piece(2,7) && !select_piece(3,7)
+      #king and rook havnt been moved
+      if !select_piece(0,7).moved? && !select_piece(4,7).moved?
+        #check other color pieces to confirm the middle squares are not threatened
+        allowed = true
+        @pieces.each do |piece|
+          if piece.color != @turn
+            list_all_legal_moves(piece.location[0],piece.location[1]).each do |move|
+              if move == [1,7] || move == [2,7] || move == [3,7]
+                allowed = false
+              end
+            end
+          end
+        end
+      end
+    end
+    #also cant castle if in check
+    if allowed && !player_in_check?
+      select_piece(4,7).location = [2,7]
+      select_piece(0,7).location = [3,7]
+    end
+  end
+
+  def get_castle_direction
+    puts "please choose left or right"
+    x = ""
+    until x == "left" || x == "right"
+      x = gets.chomp.to_s
+    end
+    x
+  end
+
+  def make_player_castle
+    success = false
+    direction = get_castle_direction
+    if @turn == "white"
+      if direction == "right" && castle_right_white
+        success = true
+      elsif direction == "left" && castle_left_white
+        success = true
+      end
+    elsif @turn == "black"
+      if direction == "right" && castle_right_black
+        success = true
+      elsif direction == "left" && castle_left_black
+        success = true
+      end
+    end
+    success
+  end
+
+  def get_player_turn_input
+    choices = ["move", "castle", "save game"]
+    input = ""
+    until choices.any? {|x| x == input}
+      puts "please choose an option:"
+      p choices
+      input = gets.chomp.to_s
+    end
+    input
+  end
+
+  def get_player_move
+    puts "create a move in format [x1,y1,x2,y2]"
+    puts "enter x1"
+    x1 = gets.chomp.to_i
+    puts "enter y1"
+    y1 = gets.chomp.to_i
+    puts "enter x2"
+    x2 = gets.chomp.to_i
+    puts "enter y2"
+    y2 = gets.chomp.to_i
+    input = [x1,y1,x2,y2]
+   until input.all? { |x| x.class == Fixnum && x > -1 && x < 9 }
+     puts "create a move in format [x1,y1,x2,y2]"
+     puts "enter x1"
+     x1 = gets.chomp.to_i
+     puts "enter y1"
+     y1 = gets.chomp.to_i
+     puts "enter x2"
+     x2 = gets.chomp.to_i
+     puts "enter y2"
+     y2 = gets.chomp.to_i
+     input = [x1,y1,x2,y2]
+   end
+   input
+  end
+
+  def make_player_move
+    moved = false
+    input = get_player_move
+    if input.any? {|x| x != nil }
+      if select_piece(input[0],input[1]).color == @turn && move_piece(input[0],input[1],input[2],input[3])
+        moved = true
+        pawn_conversion
+      end
+    end
+    moved
+  end
+
+  def save
+    puts "what should we name your saved game?"
+    input = gets.chomp.to_s
+    save_game(self,input)
+  end
+
+  def save_game(game, name)
+    File.open("saved_games/#{name}.yaml", "w") do |file|
+      file.puts YAML::dump(game)
+    end
+    puts "game saved, should be here for you when you come back!"
+    puts "saved game with name #{name}"
+  end
+
+
+  def game_flow
+
+
+    until player_in_checkmate? || stalemate?
+      draw
+      puts "\n It is #{@turn}'s turn \n"
+      if player_in_check?
+        puts "#{@turn} is in check!"
+      end
+      input = get_player_turn_input
+      if input == "save game"
+        save
+      elsif input == "castle"
+        if make_player_castle
+          swap_turn
+        else
+          puts "not a legal move"
+        end
+      elsif input == "move"
+        if make_player_move
+          swap_turn
+        else
+          puts "not a legal move"
+        end
+      end
+    end #checkmate or stalemate?
+
+    if player_in_checkmate?
+      puts "#{@turn} is in checkmate! game over"
+      exit
+    elsif stalemate?
+      puts "that's stalemate! game over"
+      exit
+    end
+
+  end #game_flow
 
 end #GAME
 
@@ -687,4 +919,46 @@ class King < Piece
     allowed_squares
   end
 
+end
+
+
+def startup_game
+  puts 'hello, welcome to chess!'
+  choice = 0
+  until choice == 1 || choice == 2
+    puts "Please select a choice"
+    puts "1) New Game \n2) Load Game"
+    choice = gets.chomp.to_i
+  end
+  if choice == 1
+    game = Game.new
+    game.game_flow
+  elsif choice == 2
+    chosen_game = -1
+    until chosen_game > -1 && chosen_game < (list_saved_games.length + 1)
+      puts "please choose a game"
+      list_saved_games
+      chosen_game = gets.chomp.to_i
+    end
+    chosen_game_string = list_saved_games[chosen_game-1]
+    game = load_game(chosen_game_string)
+    puts "nice, you loaded a game"
+    game.game_flow
+  end
+end
+
+def list_saved_games
+  games = Dir["./saved_games/*.yaml"]
+  games.map! { |x| x.scan(/(?<=saved_games\/)(.*)(?=\.yaml)/)  }
+  games.flatten!
+  games.each_with_index {|x,i| puts "#{i+1}) #{x} \n"}
+end
+
+def load_game(name)
+  array = []
+  $/="\n\n"
+  File.open("saved_games/#{name}.yaml", "r").each do |object|
+    array << YAML::load(object)
+  end
+  array[0]
 end
