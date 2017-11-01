@@ -1,0 +1,195 @@
+--- !ruby/object:Game
+turn: black
+pieces:
+- !ruby/object:Rook
+  location:
+  - 0
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Knight
+  location:
+  - 1
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Bishop
+  location:
+  - 2
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Queen
+  location:
+  - 3
+  - 7
+  color: black
+  moved: false
+- !ruby/object:King
+  location:
+  - 4
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Bishop
+  location:
+  - 5
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Knight
+  location:
+  - 6
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Rook
+  location:
+  - 7
+  - 7
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 0
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 1
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 2
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 3
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 4
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 5
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 6
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 7
+  - 6
+  color: black
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 0
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 1
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 2
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 3
+  - 3
+  color: white
+  moved: true
+- !ruby/object:Pawn
+  location:
+  - 4
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 5
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 6
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Pawn
+  location:
+  - 7
+  - 1
+  color: white
+  moved: false
+- !ruby/object:Rook
+  location:
+  - 0
+  - 0
+  color: white
+  moved: false
+- !ruby/object:Knight
+  location:
+  - 1
+  - 0
+  color: white
+  moved: false
+- !ruby/object:Bishop
+  location:
+  - 2
+  - 0
+  color: white
+  moved: false
+- !ruby/object:Queen
+  location:
+  - 3
+  - 0
+  color: white
+  moved: false
+- !ruby/object:King
+  location:
+  - 4
+  - 0
+  color: white
+  moved: false
+- !ruby/object:Bishop
+  location:
+  - 5
+  - 0
+  color: white
+  moved: false
+- !ruby/object:Knight
+  location:
+  - 6
+  - 0
+  color: white
+  moved: false
+- !ruby/object:Rook
+  location:
+  - 7
+  - 0
+  color: white
+  moved: false

@@ -1,4 +1,5 @@
 require 'yaml'
+require 'colorize'
 
 class Game
   attr_accessor :pieces, :turn
@@ -75,7 +76,7 @@ class Game
       mid_square = (line_2 + line_3 + line_4)
       puts mid_square
     end
-    puts "    0     1     2     3     4     5     6     7"
+    puts "    0     1     2     3     4     5     6     7".yellow
   end
 
   def select_piece(x,y)
@@ -422,7 +423,7 @@ class Game
        p choices
        pick = -1
        until pick > -1 && pick < choices.length
-         puts 'pick with array number format what this piece is to become'
+         puts 'pick with array number format what this piece is to become'.blue
          pick = gets.chomp.to_i
        end
        @pieces.push(choices[pick].new([x,y],"white"))
@@ -438,7 +439,7 @@ class Game
        p choices
        pick = -1
        until pick > -1 && pick < choices.length
-         puts 'pick what this piece is to become'
+         puts 'pick what this piece is to become'.blue
          pick = gets.chomp.to_i
        end
        @pieces.push(choices[pick].new([x,y],"black"))
@@ -550,7 +551,7 @@ class Game
   end
 
   def get_castle_direction
-    puts "please choose left or right"
+    puts "please choose left or right".blue
     x = ""
     until x == "left" || x == "right"
       x = gets.chomp.to_s
@@ -581,7 +582,7 @@ class Game
     choices = ["move", "castle", "save game"]
     input = ""
     until choices.any? {|x| x == input}
-      puts "please choose an option:"
+      puts "please choose an option:".blue
       p choices
       input = gets.chomp.to_s
     end
@@ -589,25 +590,25 @@ class Game
   end
 
   def get_player_move
-    puts "create a move in format [x1,y1,x2,y2]"
-    puts "enter x1"
+    puts "create a move in format [x1,y1,x2,y2]".blue
+    puts "enter x1".blue
     x1 = gets.chomp.to_i
-    puts "enter y1"
+    puts "enter y1".blue
     y1 = gets.chomp.to_i
-    puts "enter x2"
+    puts "enter x2".blue
     x2 = gets.chomp.to_i
-    puts "enter y2"
+    puts "enter y2".blue
     y2 = gets.chomp.to_i
     input = [x1,y1,x2,y2]
    until input.all? { |x| x.class == Fixnum && x > -1 && x < 9 }
-     puts "create a move in format [x1,y1,x2,y2]"
-     puts "enter x1"
+     puts "create a move in format [x1,y1,x2,y2]".blue
+     puts "enter x1".blue
      x1 = gets.chomp.to_i
-     puts "enter y1"
+     puts "enter y1".blue
      y1 = gets.chomp.to_i
-     puts "enter x2"
+     puts "enter x2".blue
      x2 = gets.chomp.to_i
-     puts "enter y2"
+     puts "enter y2".blue
      y2 = gets.chomp.to_i
      input = [x1,y1,x2,y2]
    end
@@ -618,7 +619,7 @@ class Game
     moved = false
     input = get_player_move
     if input.any? {|x| x != nil }
-      if select_piece(input[0],input[1]).color == @turn && move_piece(input[0],input[1],input[2],input[3])
+      if select_piece(input[0],input[1]) && select_piece(input[0],input[1]).color == @turn && move_piece(input[0],input[1],input[2],input[3])
         moved = true
         pawn_conversion
       end
@@ -627,7 +628,7 @@ class Game
   end
 
   def save
-    puts "what should we name your saved game?"
+    puts "what should we name your saved game?".blue
     input = gets.chomp.to_s
     save_game(self,input)
   end
@@ -636,8 +637,8 @@ class Game
     File.open("saved_games/#{name}.yaml", "w") do |file|
       file.puts YAML::dump(game)
     end
-    puts "game saved, should be here for you when you come back!"
-    puts "saved game with name #{name}"
+    puts "game saved, should be here for you when you come back!".green
+    puts "saved game with name #{name}".green
   end
 
   def game_flow
@@ -645,9 +646,9 @@ class Game
 
     until player_in_checkmate? || stalemate?
       draw
-      puts "\n It is #{@turn}'s turn \n"
+      puts "\n It is #{@turn}'s turn \n".green
       if player_in_check?
-        puts "#{@turn} is in check!"
+        puts "#{@turn} is in check!".red
       end
       input = get_player_turn_input
       if input == "save game"
@@ -656,22 +657,22 @@ class Game
         if make_player_castle
           swap_turn
         else
-          puts "not a legal move"
+          puts "not a legal move".red
         end
       elsif input == "move"
         if make_player_move
           swap_turn
         else
-          puts "not a legal move"
+          puts "not a legal move".red
         end
       end
     end #checkmate or stalemate?
 
     if player_in_checkmate?
-      puts "#{@turn} is in checkmate! game over"
+      puts "#{@turn} is in checkmate! game over".yellow
       exit
     elsif stalemate?
-      puts "that's stalemate! game over"
+      puts "that's stalemate! game over".yellow
       exit
     end
 
@@ -912,11 +913,11 @@ class King < Piece
 end
 
 def startup_game
-  puts 'hello, welcome to chess!'
+  puts 'hello, welcome to chess!'.cyan
   choice = 0
   until choice == 1 || choice == 2
     puts "Please select a choice"
-    puts "1) New Game \n2) Load Game"
+    puts "1) New Game \n2) Load Game".green
     choice = gets.chomp.to_i
   end
   if choice == 1
