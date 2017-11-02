@@ -237,6 +237,7 @@ class QueenTest < Minitest::Test
     @game.pieces.push(Pawn.new([1,5], "black"))
     @game.pieces.push(Pawn.new([2,3], "black"))
     @game.pieces.push(Pawn.new([2,6], "black"))
+    @game.pieces.push(Pawn.new([6,2], "black"))
     @game.pieces.push(Queen.new([6,6], "white"))
     @game.pieces.push(Queen.new([6,1], "black"))
   end
@@ -264,15 +265,16 @@ class QueenTest < Minitest::Test
   end
 
   def test_dont_take_own_piece
-
+    refute @game.move_piece(6,1,6,2)
   end
 
   def test_cant_move_if_path_blocked_own_piece
-
+    @game.move_piece(6,6,3,3)
+    refute @game.move_piece(3,3,7,2)
   end
 
   def test_cant_move_if_path_blocked_other_piece
-
+    refute @game.move_piece(6,6,1,6)
   end
 
 
