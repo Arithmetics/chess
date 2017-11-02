@@ -290,37 +290,34 @@ class KingTest < Minitest::Test
     @game.pieces.push(Pawn.new([7,1], "white"))
     @game.pieces.push(Pawn.new([0,1], "white"))
     @game.pieces.push(King.new([4,7], "black"))
-    @game.pieces.push(Pawn.new([6,4], "black"))
     @game.pieces.push(Pawn.new([1,2], "black"))
     @game.pieces.push(Pawn.new([0,3], "black"))
     @game.pieces.push(Pawn.new([0,6], "black"))
     @game.pieces.push(Pawn.new([1,5], "black"))
-    @game.pieces.push(Pawn.new([2,3], "black"))
+    @game.pieces.push(Pawn.new([4,6], "black"))
+    @game.pieces.push(Pawn.new([5,5], "white"))
     @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
   end
 
-  def test_move_in_all_4_directions
-
+  def test_move_in_all_8_directions
+    assert @game.move_piece(4,0,4,1)
+    assert @game.move_piece(4,1,5,2)
+    assert @game.move_piece(5,2,6,2)
+    assert @game.move_piece(6,2,5,3)
+    assert @game.move_piece(5,3,4,3)
+    assert @game.move_piece(4,3,3,2)
+    assert @game.move_piece(3,2,3,1)
+    assert @game.move_piece(3,1,4,0)
   end
 
   def test_take_opposite_color
-
+    assert @game.move_piece(4,7,5,6)
+    assert @game.move_piece(5,6,5,5)
   end
 
   def test_dont_take_own_piece
-
+    refute @game.move_piece(4,7,4,6)
   end
-
-  def test_cant_move_if_path_blocked_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_other_piece
-
-  end
-
 
 end
 
@@ -330,39 +327,33 @@ class CheckTest < Minitest::Test
     @game = Game.new
     @game.pieces = []
     @game.pieces.push(King.new([4,0], "white"))
-    @game.pieces.push(Pawn.new([6,3], "white"))
-    @game.pieces.push(Pawn.new([7,1], "white"))
-    @game.pieces.push(Pawn.new([0,1], "white"))
     @game.pieces.push(King.new([4,7], "black"))
-    @game.pieces.push(Pawn.new([6,4], "black"))
-    @game.pieces.push(Pawn.new([1,2], "black"))
-    @game.pieces.push(Pawn.new([0,3], "black"))
-    @game.pieces.push(Pawn.new([0,6], "black"))
-    @game.pieces.push(Pawn.new([1,5], "black"))
-    @game.pieces.push(Pawn.new([2,3], "black"))
-    @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
+    @game.pieces.push(Rook.new([0,1], "black"))
+    @game.pieces.push(Pawn.new([0,3], "white"))
+    @game.pieces.push(Bishop.new([6,4], "black"))
   end
 
-  def test_move_in_all_4_directions
-
+  def test_player_in_check
+    refute @game.player_in_check?
+    @game.swap_turn
+    @game.move_piece(0,1,4,1)
+    @game.swap_turn
+    assert @game.player_in_check?
   end
 
-  def test_take_opposite_color
-
+  def test_player_cant_move_into_check
+    @game.turn = "white"
+    refute @game.player_in_check?
+    refute @game.move_piece(4,0,4,1)
   end
 
-  def test_dont_take_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_other_piece
-
+  def test_player_must_end_check_to_move
+    @game.swap_turn
+    @game.move_piece(6,4,7,3)
+    @game.swap_turn
+    assert @game.player_in_check?
+    refute @game.move_piece(0,3,0,4)
+    assert @game.move_piece(4,0,5,0)
   end
 
 
@@ -374,127 +365,34 @@ class CheckmateTest < Minitest::Test
     @game = Game.new
     @game.pieces = []
     @game.pieces.push(King.new([4,0], "white"))
-    @game.pieces.push(Pawn.new([6,3], "white"))
-    @game.pieces.push(Pawn.new([7,1], "white"))
-    @game.pieces.push(Pawn.new([0,1], "white"))
     @game.pieces.push(King.new([4,7], "black"))
-    @game.pieces.push(Pawn.new([6,4], "black"))
-    @game.pieces.push(Pawn.new([1,2], "black"))
-    @game.pieces.push(Pawn.new([0,3], "black"))
-    @game.pieces.push(Pawn.new([0,6], "black"))
-    @game.pieces.push(Pawn.new([1,5], "black"))
-    @game.pieces.push(Pawn.new([2,3], "black"))
-    @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
-  end
-
-  def test_move_in_all_4_directions
+    @game.pieces.push(Rook.new([5,0], "white"))
+    @game.pieces.push(Rook.new([3,0], "white"))
+    @game.pieces.push(Queen.new([6,0], "white"))
 
   end
 
-  def test_take_opposite_color
-
-  end
-
-  def test_dont_take_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_other_piece
-
+  def test_checkmate1
+    @game.swap_turn
+    refute @game.player_in_checkmate?
+    @game.swap_turn
+    @game.move_piece(6,0,6,6)
+    @game.move_piece(5,0,5,7)
+    @game.swap_turn
+    assert @game.player_in_checkmate?
   end
 
 
-end
-
-class CheckTest < Minitest::Test
-
-  def setup
-    @game = Game.new
-    @game.pieces = []
-    @game.pieces.push(King.new([4,0], "white"))
-    @game.pieces.push(Pawn.new([6,3], "white"))
-    @game.pieces.push(Pawn.new([7,1], "white"))
-    @game.pieces.push(Pawn.new([0,1], "white"))
-    @game.pieces.push(King.new([4,7], "black"))
-    @game.pieces.push(Pawn.new([6,4], "black"))
-    @game.pieces.push(Pawn.new([1,2], "black"))
-    @game.pieces.push(Pawn.new([0,3], "black"))
-    @game.pieces.push(Pawn.new([0,6], "black"))
-    @game.pieces.push(Pawn.new([1,5], "black"))
-    @game.pieces.push(Pawn.new([2,3], "black"))
-    @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
-  end
-
-  def test_move_in_all_4_directions
-
-  end
-
-  def test_take_opposite_color
-
-  end
-
-  def test_dont_take_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_other_piece
-
-  end
-
-
-end
-
-class StalemateTest < Minitest::Test
-
-  def setup
-    @game = Game.new
-    @game.pieces = []
-    @game.pieces.push(King.new([4,0], "white"))
-    @game.pieces.push(Pawn.new([6,3], "white"))
-    @game.pieces.push(Pawn.new([7,1], "white"))
-    @game.pieces.push(Pawn.new([0,1], "white"))
-    @game.pieces.push(King.new([4,7], "black"))
-    @game.pieces.push(Pawn.new([6,4], "black"))
-    @game.pieces.push(Pawn.new([1,2], "black"))
-    @game.pieces.push(Pawn.new([0,3], "black"))
-    @game.pieces.push(Pawn.new([0,6], "black"))
-    @game.pieces.push(Pawn.new([1,5], "black"))
-    @game.pieces.push(Pawn.new([2,3], "black"))
-    @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
-  end
-
-  def test_move_in_all_4_directions
-
-  end
-
-  def test_take_opposite_color
-
-  end
-
-  def test_dont_take_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_other_piece
-
+  def test_not_checkmate_without_check_stalemate
+    @game.swap_turn
+    refute @game.player_in_checkmate?
+    @game.swap_turn
+    @game.move_piece(6,0,6,6)
+    @game.move_piece(5,0,5,6)
+    @game.move_piece(3,0,3,6)
+    @game.swap_turn
+    refute @game.player_in_checkmate?
+    assert @game.stalemate?
   end
 
 
