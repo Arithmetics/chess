@@ -237,16 +237,30 @@ class QueenTest < Minitest::Test
     @game.pieces.push(Pawn.new([1,5], "black"))
     @game.pieces.push(Pawn.new([2,3], "black"))
     @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
+    @game.pieces.push(Queen.new([6,6], "white"))
+    @game.pieces.push(Queen.new([6,1], "black"))
   end
 
-  def test_move_in_all_4_directions
+  def test_move_in_all_4_cross_directions
+    @game.turn = "black"
+    assert @game.move_piece(6,1,3,1)
+    assert @game.move_piece(3,1,3,7)
+    assert @game.move_piece(3,7,0,7)
+    assert @game.move_piece(0,7,3,7)
+    assert @game.move_piece(3,7,3,0)
+  end
 
+  def test_move_in_all_4_diagonal_directions
+    assert @game.move_piece(6,6,0,0)
+    assert @game.move_piece(0,0,3,3)
+    assert @game.move_piece(3,3,3,4)
+    assert @game.move_piece(3,4,0,7)
+    assert @game.move_piece(0,7,6,1)
   end
 
   def test_take_opposite_color
-
+    assert @game.move_piece(6,1,7,1)
+    assert @game.move_piece(6,6,6,4)
   end
 
   def test_dont_take_own_piece
