@@ -178,44 +178,50 @@ end
 
 class RookTest < Minitest::Test
 
-  def setup
-    @game = Game.new
-    @game.pieces = []
-    @game.pieces.push(King.new([4,0], "white"))
-    @game.pieces.push(Pawn.new([6,3], "white"))
-    @game.pieces.push(Pawn.new([7,1], "white"))
-    @game.pieces.push(Pawn.new([0,1], "white"))
-    @game.pieces.push(King.new([4,7], "black"))
-    @game.pieces.push(Pawn.new([6,4], "black"))
-    @game.pieces.push(Pawn.new([1,2], "black"))
-    @game.pieces.push(Pawn.new([0,3], "black"))
-    @game.pieces.push(Pawn.new([0,6], "black"))
-    @game.pieces.push(Pawn.new([1,5], "black"))
-    @game.pieces.push(Pawn.new([2,3], "black"))
-    @game.pieces.push(Pawn.new([2,6], "black"))
-    @game.pieces.push(Bishop.new([7,7], "white"))
-    @game.pieces.push(Bishop.new([7,0], "black"))
-  end
+    def setup
+      @game = Game.new
+      @game.pieces = []
+      @game.pieces.push(King.new([4,0], "white"))
+      @game.pieces.push(Pawn.new([6,3], "white"))
+      @game.pieces.push(Pawn.new([7,1], "white"))
+      @game.pieces.push(King.new([4,7], "black"))
+      @game.pieces.push(Pawn.new([6,4], "black"))
+      @game.pieces.push(Pawn.new([0,3], "black"))
+      @game.pieces.push(Pawn.new([0,6], "black"))
+      @game.pieces.push(Pawn.new([1,5], "black"))
+      @game.pieces.push(Pawn.new([2,3], "black"))
+      @game.pieces.push(Pawn.new([2,6], "black"))
+      @game.pieces.push(Rook.new([7,2], "white"))
+      @game.pieces.push(Rook.new([5,7], "black"))
+      @game.pieces.push(Pawn.new([6,1], "white"))
+    end
 
-  def test_move_in_all_4_directions
+    def test_move_in_all_4_directions
+      assert @game.move_piece(7,2,0,2)
+      assert @game.move_piece(0,2,7,2)
+      assert @game.move_piece(5,7,5,1)
+      assert @game.move_piece(5,1,5,7)
+    end
 
-  end
+    def test_take_opposite_color
+      assert @game.move_piece(2,3,2,2)
+      assert @game.move_piece(7,2,2,2)
+    end
 
-  def test_take_opposite_color
+    def test_dont_take_own_piece
+      assert @game.move_piece(6,1,6,2)
+      refute @game.move_piece(7,2,6,2)
+    end
 
-  end
+    def test_cant_move_if_path_blocked_own_piece
+      assert @game.move_piece(6,1,6,2)
+      refute @game.move_piece(7,2,2,2)
+    end
 
-  def test_dont_take_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_own_piece
-
-  end
-
-  def test_cant_move_if_path_blocked_other_piece
-
-  end
+    def test_cant_move_if_path_blocked_other_piece
+      assert @game.move_piece(2,3,2,2)
+      refute @game.move_piece(7,2,0,2)
+    end
 
 
 end
